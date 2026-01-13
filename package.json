@@ -1,0 +1,15 @@
+{
+  "name": "interview-docs",
+  "version": "1.0.0",
+  "description": "面试题集锦文档系统",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vite-plugin-static-copy": "^3.1.4"
+  }
+}

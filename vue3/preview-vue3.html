@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue3 面试题集锦预览</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #f6f8fa;
+        }
+        
+        .header {
+            background: #42b883;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: #fff;
+            border-right: 1px solid #d0d7de;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #d0d7de;
+            font-size: 14px;
+            font-weight: 600;
+            color: #24292e;
+        }
+        
+        .question-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .question-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #24292e;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s;
+        }
+        
+        .question-item:hover {
+            background: #f6f8fa;
+        }
+        
+        .question-item.active {
+            background: #e6f7ff;
+            color: #0969da;
+            border-left: 3px solid #0969da;
+        }
+        
+        .preview-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .preview-header {
+            background: #f6f8fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #d0d7de;
+            font-size: 14px;
+            font-weight: 600;
+            color: #24292e;
+        }
+        
+        #preview {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: #ffffff;
+        }
+        
+        .markdown-body {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #8b949e;
+            font-size: 14px;
+        }
+        
+        /* 代码高亮样式 */
+        .hljs-keyword {
+            color: #d73a49 !important;
+            font-weight: 600;
+        }
+        
+        .hljs-string {
+            color: #032f62 !important;
+        }
+        
+        .hljs-number {
+            color: #005cc5 !important;
+        }
+        
+        .hljs-comment {
+            color: #6a737d !important;
+            font-style: italic;
+        }
+        
+        .hljs-function {
+            color: #6f42c1 !important;
+        }
+        
+        .hljs-variable {
+            color: #e36209 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <span>💚</span>
+            Vue3 面试题集锦
+        </h1>
+        <a href="index.html" class="back-btn">← 返回首页</a>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">题目列表</div>
+            <div class="question-list" id="questionList">
+                <!-- 题目列表将通过 JavaScript 动态生成 -->
+            </div>
+        </div>
+        
+        <div class="preview-panel">
+            <div class="preview-header" id="previewHeader">预览</div>
+            <div id="preview">
+                <div class="empty-state">
+                    <p>请从左侧选择一个题目查看详细内容</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questionList = document.getElementById('questionList');
+        const preview = document.getElementById('preview');
+        const previewHeader = document.getElementById('previewHeader');
+        
+        // 题目配置
+        const questions = [
+            { id: 1, title: 'Vue3 相比 Vue2 有哪些重大改进？', file: 'questions-vue3/01-1__Vue3_相比_Vue2_有哪些重大改进_.md' },
+            { id: 2, title: 'Vue3 的响应式原理是什么？与 Vue2 有什么区别？', file: 'questions-vue3/02-2__Vue3_的响应式原理是什么_与_Vue2_有什么区别_.md' },
+            { id: 3, title: 'Composition API 的核心概念是什么？', file: 'questions-vue3/03-3__Composition_API_的核心概念是什么_.md' },
+            { id: 4, title: 'Vue3 的响应式系统有哪些新特性？', file: 'questions-vue3/04-4__Vue3_的响应式系统有哪些新特性_.md' },
+            { id: 5, title: 'Vue3 的虚拟 DOM 和 Diff 算法有哪些改进？', file: 'questions-vue3/05-5__Vue3_的虚拟_DOM_和_Diff_算法有哪些改进_.md' },
+            { id: 6, title: 'Vue3 组件通信有哪些新方式？', file: 'questions-vue3/06-6__Vue3_组件通信有哪些新方式_.md' },
+            { id: 7, title: 'Vue3 的生命周期有哪些变化？', file: 'questions-vue3/07-7__Vue3_的生命周期有哪些变化_.md' },
+            { id: 8, title: 'Vue3 有哪些新特性？', file: 'questions-vue3/08-8__Vue3_有哪些新特性_.md' },
+            { id: 9, title: 'Vue2 和 Vue3 的详细对比', file: 'questions-vue3/09-9__Vue2_和_Vue3_的详细对比.md' },
+            { id: 10, title: 'Vue3 性能优化有哪些新方法？', file: 'questions-vue3/10-10__Vue3_性能优化有哪些新方法_.md' },
+            { id: 11, title: 'Vue3 最佳实践', file: 'questions-vue3/11-11__Vue3_最佳实践.md' }
+        ];
+        
+        // 配置 marked
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: true,
+            mangle: false
+        });
+        
+        // 渲染题目列表
+        function renderQuestionList() {
+            questionList.innerHTML = questions.map(q => `
+                <div class="question-item" data-id="${q.id}" data-file="${q.file}">
+                    ${q.id}. ${q.title}
+                </div>
+            `).join('');
+        }
+        
+        // 加载题目内容
+        async function loadQuestion(file) {
+            previewHeader.textContent = '加载中...';
+            preview.innerHTML = '<div class="empty-state"><p>加载中...</p></div>';
+            
+            try {
+                const response = await fetch(file);
+                if (!response.ok) {
+                    throw new Error('文件不存在');
+                }
+                
+                const markdown = await response.text();
+                const html = marked.parse(markdown);
+                
+                preview.innerHTML = `<div class="markdown-body">${html}</div>`;
+                previewHeader.textContent = file.split('/').pop().replace(/_/g, ' ').replace('.md', '');
+                
+                // 高亮代码
+                document.querySelectorAll('pre code').forEach(block => {
+                    hljs.highlightElement(block);
+                });
+            } catch (error) {
+                preview.innerHTML = `
+                    <div class="empty-state">
+                        <p>加载失败：${error.message}</p>
+                    </div>
+                `;
+                previewHeader.textContent = '预览';
+            }
+        }
+        
+        // 点击题目
+        questionList.addEventListener('click', async function(e) {
+            const item = e.target.closest('.question-item');
+            if (!item) return;
+            
+            // 移除其他选中状态
+            document.querySelectorAll('.question-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            
+            const file = item.dataset.file;
+            await loadQuestion(file);
+        });
+        
+        // 初始化
+        renderQuestionList();
+        
+        // 自动加载第一个问题
+        window.addEventListener('load', function() {
+            const firstQuestion = questionList.querySelector('.question-item');
+            if (firstQuestion) {
+                firstQuestion.click();
+            }
+        });
+    </script>
+</body>
+</html>

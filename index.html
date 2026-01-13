@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>面试题集锦 - 文档预览系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script>
+        // 注册 Vue 语言支持（Vue 使用 XML 语法高亮）
+        if (typeof hljs !== 'undefined') {
+            hljs.registerLanguage('vue', function () {
+                return hljs.getLanguage('xml');
+            });
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1890ff;
+            --text-color: #24292e;
+            --border-color: #e1e4e8;
+            --bg-color: #f6f8fa;
+            --sidebar-width: 300px;
+            --header-height: 60px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 .logo {
+            font-size: 24px;
+        }
+
+        .header .search-box {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header .search-box {
+            position: relative;
+        }
+
+        .header .search-box input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            width: 300px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .header .search-box input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .header .upload-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header .upload-btn:hover {
+            background: #40a9ff;
+        }
+
+        .header .file-input {
+            display: none;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            margin-top: var(--header-height);
+            height: calc(100vh - var(--header-height));
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #fff;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            position: fixed;
+            top: var(--header-height);
+            bottom: 0;
+            left: 0;
+        }
+
+        .sidebar-section {
+            padding: 8px 0;
+        }
+
+        .sidebar-section-title {
+            padding: 8px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #586069;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            user-select: none;
+        }
+
+        .sidebar-section-title:hover {
+            color: var(--text-color);
+        }
+
+        .sidebar-section-title .arrow {
+            font-size: 10px;
+            transition: transform 0.2s;
+        }
+
+        .sidebar-section-title .arrow.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .sidebar-section-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .sidebar-section-content.collapsed {
+            max-height: 0;
+        }
+
+        .sidebar-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-color);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg-color);
+        }
+
+        .sidebar-item.active {
+            background: #e6f7ff;
+            color: var(--primary-color);
+            border-right: 3px solid var(--primary-color);
+        }
+
+        .sidebar-item .icon {
+            font-size: 16px;
+        }
+
+        .sidebar-item .badge {
+            background: #f0f0f0;
+            color: #666;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+            margin-right: 5px;
+        }
+
+        .sidebar-item .expand-arrow {
+            font-size: 10px;
+            transition: transform 0.2s;
+            color: #999;
+        }
+
+        .sidebar-item .expand-arrow.expanded {
+            transform: rotate(90deg);
+        }
+
+        /* 子题目列表 */
+        .question-list {
+            margin-left: 44px;
+            border-left: 1px solid var(--border-color);
+            padding-left: 12px;
+            display: none;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .question-list.show {
+            display: block;
+        }
+
+        .question-item {
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #586069;
+            border-radius: 4px;
+            margin: 2px 0;
+            transition: all 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+        }
+
+        .question-item:hover {
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .question-item.active {
+            background: #e6f7ff;
+            color: var(--primary-color);
+        }
+
+        /* Tooltip */
+        .question-item[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 10px;
+            padding: 8px 12px;
+            background: #333;
+            color: #fff;
+            font-size: 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+            max-width: 300px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+        }
+
+        .question-item[title]:hover::before {
+            content: '';
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 4px;
+            border: 6px solid transparent;
+            border-right-color: #333;
+            z-index: 1000;
+        }
+
+        /* Content */
+        .content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            overflow-y: auto;
+            padding: 40px 60px;
+            background: #fff;
+            scroll-behavior: smooth;
+        }
+
+        .markdown-body {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 30px 0;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #24292e;
+        }
+
+        /* 隐藏目录 */
+        .markdown-body>ul:first-child {
+            display: none;
+        }
+
+        .markdown-body h1 {
+            font-size: 2em;
+            font-weight: 600;
+            margin-bottom: 0.5em;
+            padding-bottom: 0.3em;
+            border-bottom: 1px solid #eaecef;
+        }
+
+        .markdown-body h2 {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-top: 2em;
+            margin-bottom: 0.5em;
+            padding-bottom: 0.3em;
+            border-bottom: 1px solid #eaecef;
+        }
+
+        .markdown-body h3 {
+            font-size: 1.25em;
+            font-weight: 600;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-body h4 {
+            font-size: 1em;
+            font-weight: 600;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-body p {
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+
+        .markdown-body ul,
+        .markdown-body ol {
+            padding-left: 2em;
+            margin-bottom: 16px;
+        }
+
+        .markdown-body li {
+            margin-bottom: 4px;
+        }
+
+        .markdown-body code {
+            background: rgba(27, 31, 35, 0.05);
+            padding: 0.2em 0.4em;
+            border-radius: 6px;
+            font-size: 85%;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+        }
+
+        .markdown-body pre {
+            background: #282c34;
+            border: 1px solid #3e4451;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 16px 0;
+            position: relative;
+        }
+
+        .markdown-body pre code {
+            background: none;
+            padding: 0;
+            font-size: 13px;
+            line-height: 1.6;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+        }
+
+        /* 代码高亮样式 - One Dark 主题，增强对比度 */
+        .hljs {
+            color: #abb2bf !important;
+            background: transparent !important;
+        }
+
+        /* 关键字 */
+        .hljs-keyword,
+        .hljs-literal,
+        .hljs-symbol {
+            color: #c678dd !important;
+            font-weight: 600;
+        }
+
+        /* 字符串 */
+        .hljs-string,
+        .hljs-subst {
+            color: #98c379 !important;
+        }
+
+        /* 数字 */
+        .hljs-number,
+        .hljs-regexp {
+            color: #d19a66 !important;
+        }
+
+        /* 注释 */
+        .hljs-comment,
+        .hljs-quote {
+            color: #999999 !important;
+            font-style: italic;
+        }
+
+        /* 函数 */
+        .hljs-function,
+        .hljs-title,
+        .hljs-title.function_ {
+            color: #61afef !important;
+        }
+
+        /* 变量名称 - 白色 */
+        .hljs-variable,
+        .hljs-name,
+        .hljs-attr,
+        .hljs-property,
+        .hljs-selector-attr,
+        .hljs-selector-id,
+        .hljs-selector-class,
+        .hljs-selector-tag,
+        .hljs-selector-pseudo {
+            color: #ffffff !important;
+        }
+
+        /* 参数 */
+        .hljs-params,
+        .hljs-built_in,
+        .hljs-class,
+        .hljs-type {
+            color: #e5c07b !important;
+        }
+
+        /* 标签 */
+        .hljs-tag {
+            color: #e06c75 !important;
+        }
+
+        /* 操作符 */
+        .hljs-operator,
+        .hljs-meta,
+        .hljs-meta-keyword {
+            color: #56b6c2 !important;
+        }
+
+        /* 常量 */
+        .hljs-constant,
+        .hljs-meta-string {
+            color: #d19a66 !important;
+        }
+
+        /* 装饰器 */
+        .hljs-deletion,
+        .hljs-addition {
+            background: #4d2c2b !important;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .hljs-deletion {
+            color: #e06c75 !important;
+        }
+
+        .hljs-addition {
+            color: #98c379 !important;
+        }
+
+        /* 其他元素默认为白色 */
+        .hljs-bullet,
+        .hljs-link,
+        .hljs-emphasis,
+        .hljs-strong,
+        .hljs-code,
+        .hljs-formula,
+        .hljs-section {
+            color: #ffffff !important;
+        }
+
+        /* 为没有被高亮的代码块添加默认白色文本 */
+        pre code {
+            color: #ffffff !important;
+        }
+
+        .markdown-body blockquote {
+            padding: 0 1em;
+            color: #6a737d;
+            border-left: 0.25em solid #dfe2e5;
+            margin: 0 0 16px 0;
+        }
+
+        .markdown-body table {
+            border-spacing: 0;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        .markdown-body table th,
+        .markdown-body table td {
+            padding: 6px 13px;
+            border: 1px solid #dfe2e5;
+        }
+
+        .markdown-body table th {
+            font-weight: 600;
+            background: #f6f8fa;
+        }
+
+        .markdown-body img {
+            max-width: 100%;
+            box-sizing: content-box;
+            background: #fff;
+        }
+
+        .markdown-body a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+
+        .markdown-body a:hover {
+            text-decoration: underline;
+        }
+
+        .markdown-body strong {
+            font-weight: 600;
+        }
+
+        .markdown-body em {
+            font-style: italic;
+        }
+
+        /* 代码块复制按钮 */
+        .code-block-wrapper {
+            position: relative;
+            margin: 16px 0;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #f6f8fa;
+            border: 1px solid #d1d5da;
+            color: #24292e;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 10;
+            opacity: 0;
+        }
+
+        .code-block-wrapper:hover .copy-button {
+            opacity: 1;
+        }
+
+        .copy-button:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .copy-button.copied {
+            background: #dafbe1;
+            border-color: #34d399;
+            color: #059669;
+        }
+
+        /* 复制成功提示 */
+        .copy-toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #24292e;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 2000;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 1.7s forwards;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .copy-toast svg {
+            color: #3fb950;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 16px;
+            color: #586069;
+            margin: 1em 0;
+        }
+
+        .markdown-body table {
+            border-collapse: collapse;
+            margin: 1em 0;
+            width: 100%;
+        }
+
+        .markdown-body table th,
+        .markdown-body table td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+        }
+
+        .markdown-body table th {
+            background: var(--bg-color);
+            font-weight: 600;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #586069;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #586069;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Mobile */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--text-color);
+        }
+
+        /* Mobile Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Mobile Sidebar */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: var(--header-height);
+                left: 0;
+                bottom: 0;
+                width: 280px;
+                max-width: 85vw;
+                background: #fff;
+                border-right: 1px solid var(--border-color);
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .header h1 span {
+                font-size: 18px;
+            }
+
+            .header .search-box input {
+                width: 120px;
+                font-size: 14px;
+            }
+
+            .header .upload-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
+            .header .upload-btn span {
+                display: none;
+            }
+
+            /* Improve touch targets on mobile */
+            .sidebar-item {
+                padding: 14px 20px;
+            }
+
+            .question-item {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            /* Adjust search results for mobile */
+            .search-results {
+                max-width: 300px;
+                right: 10px;
+            }
+
+            /* Adjust content padding for mobile */
+            .markdown-body {
+                padding: 20px 0;
+                font-size: 15px;
+            }
+
+            /* Adjust code blocks for mobile */
+            .markdown-body pre {
+                overflow-x: auto;
+                font-size: 12px;
+            }
+
+            /* Adjust tables for mobile */
+            .markdown-body table {
+                font-size: 14px;
+            }
+
+            .markdown-body table th,
+            .markdown-body table td {
+                padding: 6px 8px;
+            }
+        }
+
+        /* Tablet styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+
+            .content {
+                padding: 30px;
+            }
+
+            .header .search-box input {
+                width: 200px;
+            }
+        }
+
+        /* Search Results */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            max-height: 400px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 4px;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-results-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-color);
+            font-size: 12px;
+            color: #666;
+        }
+
+        .search-results-list {
+            padding: 4px 0;
+        }
+
+        .search-result-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .search-result-item:hover,
+        .search-result-item.selected {
+            background: #e6f7ff;
+        }
+
+        .search-result-item .result-doc {
+            font-size: 11px;
+            color: #999;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .search-result-item .result-question {
+            font-size: 13px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .search-result-item .result-match {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .match-type-badge {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 6px;
+            background: #f0f0f0;
+            color: #666;
+            font-size: 11px;
+            border-radius: 3px;
+        }
+
+        .no-results {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+                z-index: 1001;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .header .search-box input {
+                width: 150px;
+            }
+
+            .header h1 span {
+                display: none;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>
+            <span class="logo">📚</span>
+            <span>面试题集锦</span>
+        </h1>
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜索文档...">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                📁 打开文件
+            </button>
+            <input type="file" id="fileInput" class="file-input" accept=".md,.markdown,.txt">
+        </div>
+    </div>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="main-container">
+        <div class="sidebar" id="sidebar">
+            <!-- 文档列表将通过 JavaScript 动态生成 -->
+        </div>
+
+        <div class="content" id="content">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                <p>请从左侧选择一个文档开始阅读</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 文档配置
+        const documents = [{
+                category: '前端框架',
+                items: [{
+                        id: 'react',
+                        name: 'React',
+                        icon: '⚛️',
+                        path: 'react/React面试题集锦.md',
+                        badge: '24+题'
+                    },
+                    {
+                        id: 'vue2',
+                        name: 'Vue2',
+                        icon: '💚',
+                        path: 'vue2/Vue2面试题集锦.md',
+                        badge: '14题'
+                    },
+                    {
+                        id: 'vue3',
+                        name: 'Vue3',
+                        icon: '💚',
+                        path: 'vue3/Vue3面试题集锦.md',
+                        badge: '11题'
+                    },
+                    {
+                        id: 'vue3-supplement',
+                        name: 'Vue3高频面试题补充',
+                        icon: '💚',
+                        path: 'vue3/Vue3高频面试题补充.md',
+                        badge: '10题'
+                    }
+                ]
+            },
+            {
+                category: '基础技术',
+                items: [{
+                        id: 'javascript',
+                        name: 'JavaScript',
+                        icon: '📜',
+                        path: 'javascript/JavaScript面试题集锦.md',
+                        badge: '20题'
+                    },
+                    {
+                        id: 'css',
+                        name: 'CSS',
+                        icon: '🎨',
+                        path: 'css/CSS面试题集锦.md',
+                        badge: '8题'
+                    },
+                    {
+                        id: 'html',
+                        name: 'HTML',
+                        icon: '🌐',
+                        path: 'html/HTML面试题集锦.md',
+                        badge: '6题'
+                    },
+                    {
+                        id: 'typescript',
+                        name: 'TypeScript',
+                        icon: '📘',
+                        path: 'typescript/TypeScript面试题集锦.md',
+                        badge: '7题'
+                    },
+                    {
+                        id: 'es6',
+                        name: 'ES6',
+                        icon: '✨',
+                        path: 'es6/ES6面试题集锦.md',
+                        badge: '20题'
+                    }
+                ]
+            },
+            {
+                category: '网络与工程化',
+                items: [{
+                        id: 'http',
+                        name: 'HTTP',
+                        icon: '🌐',
+                        path: 'http/HTTP面试题集锦.md',
+                        badge: '20题'
+                    },
+                    {
+                        id: 'performance',
+                        name: '前端性能优化',
+                        icon: '⚡',
+                        path: 'scenarios/前端性能优化高频面试题补充.md',
+                        badge: '10题'
+                    },
+                    {
+                        id: 'webpack',
+                        name: 'Webpack',
+                        icon: '📦',
+                        path: 'webpack/Webpack面试题集锦.md',
+                        badge: '10题'
+                    },
+                    {
+                        id: 'webpack-supplement',
+                        name: 'Webpack高频面试题补充',
+                        icon: '📦',
+                        path: 'webpack/Webpack高频面试题补充.md',
+                        badge: '10题'
+                    },
+                    {
+                        id: 'vite',
+                        name: 'Vite',
+                        icon: '⚡',
+                        path: 'vite/Vite面试题集锦.md',
+                        badge: '10题'
+                    },
+                    {
+                        id: 'vite-supplement',
+                        name: 'Vite高频面试题补充',
+                        icon: '⚡',
+                        path: 'vite/Vite高频面试题补充.md',
+                        badge: '10题'
+                    },
+                    {
+                        id: 'engineering',
+                        name: '前端工程化',
+                        icon: '🔧',
+                        path: 'scenarios/前端工程化高频面试题补充.md',
+                        badge: '10题'
+                    }
+                ]
+            },
+            {
+                category: '大厂面试',
+                items: [{
+                        id: 'tencent',
+                        name: '腾讯',
+                        icon: '🐧',
+                        path: 'big-company/腾讯面试题集锦.md',
+                        badge: '8题'
+                    },
+                    {
+                        id: 'pinduoduo',
+                        name: '拼多多',
+                        icon: '🍎',
+                        path: 'big-company/拼多多面试题集锦.md',
+                        badge: '8题'
+                    },
+                    {
+                        id: 'baidu',
+                        name: '百度',
+                        icon: '🔍',
+                        path: 'big-company/百度面试题集锦.md',
+                        badge: '8题'
+                    },
+                    {
+                        id: 'jd',
+                        name: '京东',
+                        icon: '🛒',
+                        path: 'big-company/京东面试题集锦.md',
+                        badge: '5题'
+                    },
+                    {
+                        id: 'bytedance',
+                        name: '字节',
+                        icon: '🎵',
+                        path: 'big-company/字节面试题集锦.md',
+                        badge: '8题'
+                    },
+                    {
+                        id: 'zhihu',
+                        name: '知乎',
+                        icon: '📖',
+                        path: 'big-company/知乎面试题集锦.md',
+                        badge: '8题'
+                    },
+                    {
+                        id: 'alibaba',
+                        name: '阿里',
+                        icon: '🟠',
+                        path: 'big-company/阿里面试题集锦.md',
+                        badge: '14题'
+                    },
+                    {
+                        id: 'futu',
+                        name: '富途',
+                        icon: '📈',
+                        path: 'big-company/富途面试题集锦.md',
+                        badge: '14题'
+                    }
+                ]
+            },
+            {
+                category: '进阶技术',
+                items: [{
+                        id: 'git',
+                        name: 'Git',
+                        icon: '📚',
+                        path: 'git/Git面试题集锦.md',
+                        badge: '8题'
+                    },
+                    {
+                        id: 'node',
+                        name: 'Node.js',
+                        icon: '💚',
+                        path: 'node/Node.js面试题集锦.md',
+                        badge: '10题'
+                    },
+                    {
+                        id: 'design-patterns',
+                        name: '设计模式',
+                        icon: '🎨',
+                        path: 'design-patterns/设计模式面试题集锦.md',
+                        badge: '10题'
+                    },
+                    {
+                        id: 'miniprogram',
+                        name: '小程序',
+                        icon: '📱',
+                        path: 'miniprogram/小程序面试题集锦.md',
+                        badge: '15题'
+                    },
+                    {
+                        id: 'scenarios',
+                        name: '高频场景题',
+                        icon: '🔥',
+                        path: 'scenarios/高频场景题集锦.md',
+                        badge: '10题'
+                    },
+                    {
+                        id: 'algorithm',
+                        name: '算法',
+                        icon: '🧮',
+                        path: 'algorithm/算法面试题集锦.md',
+                        badge: '10题'
+                    }
+                ]
+            }
+        ];
+
+        let currentDoc = null;
+        let currentQuestions = [];
+        let collapsedSections = {};
+        let expandedQuestions = {};
+        let allQuestions = {}; // 存储所有文档的题目列表
+
+        // 配置 marked
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: true,
+            mangle: false
+        });
+
+        // 渲染侧边栏
+        function renderSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            let html = '';
+
+            documents.forEach((section, sectionIndex) => {
+                const isCollapsed = collapsedSections[sectionIndex];
+                html += `<div class="sidebar-section">`;
+                html += `
+                    <div class="sidebar-section-title" onclick="toggleSection(${sectionIndex})">
+                        <span class="arrow ${isCollapsed ? 'collapsed' : ''}">▼</span>
+                        ${section.category}
+                    </div>
+                `;
+                html += `<div class="sidebar-section-content ${isCollapsed ? 'collapsed' : ''}">`;
+
+                section.items.forEach(doc => {
+                    const activeClass = currentDoc && currentDoc.id === doc.id ? 'active' : '';
+                    const isQuestionListExpanded = expandedQuestions[doc.id];
+                    const questionListClass = (currentDoc && currentDoc.id === doc.id &&
+                        isQuestionListExpanded) ? 'show' : '';
+
+                    html += `
+                        <div>
+                            <div class="sidebar-item ${activeClass}" onclick="handleDocClick(event, '${doc.id}')">
+                                <span class="icon">${doc.icon}</span>
+                                <span>${doc.name}</span>
+                                <span class="badge">${doc.badge}</span>
+                                ${currentDoc && currentDoc.id === doc.id ? `<span class="expand-arrow ${isQuestionListExpanded ? 'expanded' : ''}">▶</span>` : ''}
+                            </div>
+                            <div class="question-list ${questionListClass}" id="questions-${doc.id}">
+                                ${currentDoc && currentDoc.id === doc.id ? renderQuestionList() : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+            });
+
+            sidebar.innerHTML = html;
+        }
+
+        // 处理文档点击
+        function handleDocClick(event, docId) {
+            event.stopPropagation();
+
+            // 如果当前文档已加载，则切换题目列表的展开/折叠
+            if (currentDoc && currentDoc.id === docId) {
+                expandedQuestions[docId] = !expandedQuestions[docId];
+                renderSidebar();
+            } else {
+                // 否则加载新文档
+                loadDocument(docId);
+            }
+        }
+
+        // 渲染题目列表
+        function renderQuestionList() {
+            if (currentQuestions.length === 0) {
+                return '<div style="padding: 10px; color: #999; font-size: 12px;">暂无题目</div>';
+            }
+
+            return currentQuestions.map((q, index) => `
+                <div class="question-item" 
+                     onclick="scrollToQuestion(${index})" 
+                     title="${index + 1}. ${q.title}">
+                    ${index + 1}. ${q.title}
+                </div>
+            `).join('');
+        }
+
+        // 切换分类折叠
+        function toggleSection(sectionIndex) {
+            collapsedSections[sectionIndex] = !collapsedSections[sectionIndex];
+            renderSidebar();
+        }
+
+        // 加载文档
+        async function loadDocument(docId, questionId = null) {
+            // 查找文档
+            let doc = null;
+            documents.forEach(section => {
+                const found = section.items.find(item => item.id === docId);
+                if (found) doc = found;
+            });
+
+            if (!doc) return;
+
+            currentDoc = doc;
+
+            // 自动展开题目列表
+            expandedQuestions[docId] = true;
+
+            // 更新 URL
+            const url = new URL(window.location);
+            url.searchParams.set('doc', docId);
+            if (questionId) {
+                url.searchParams.set('question', questionId);
+            } else {
+                url.searchParams.delete('question');
+            }
+            window.history.pushState({}, '', url);
+
+            renderSidebar();
+
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>加载中...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(doc.path);
+                if (!response.ok) {
+                    throw new Error('文件不存在');
+                }
+
+                const markdown = await response.text();
+                const html = marked.parse(markdown);
+
+                // 解析题目
+                parseQuestions(markdown);
+
+                content.innerHTML = `<div class="markdown-body">${html}</div>`;
+
+                // 添加代码块复制按钮
+                addCopyButtons();
+
+                // 滚动到指定题目或顶部
+                if (questionId !== null) {
+                    scrollToQuestion(questionId);
+
+                    // 确保侧边栏滚动到高亮题目
+                    setTimeout(() => {
+                        const questionItems = document.querySelectorAll('.question-item');
+                        if (questionItems[questionId]) {
+                            const sidebar = document.getElementById('sidebar');
+                            const activeQuestion = questionItems[questionId];
+                            const sidebarRect = sidebar.getBoundingClientRect();
+                            const questionRect = activeQuestion.getBoundingClientRect();
+
+                            // 计算题目在侧边栏中的相对位置
+                            const relativeTop = questionRect.top - sidebarRect.top + sidebar.scrollTop;
+                            const sidebarHeight = sidebar.clientHeight;
+
+                            // 如果题目不在可视区域内，滚动到中间位置
+                            if (relativeTop < sidebar.scrollTop || relativeTop > sidebar.scrollTop +
+                                sidebarHeight) {
+                                sidebar.scrollTo({
+                                    top: relativeTop - sidebarHeight / 2,
+                                    behavior: 'smooth'
+                                });
+                            }
+                        }
+                    }, 100);
+                } else {
+                    content.scrollTop = 0;
+                }
+
+                // 更新题目列表
+                renderSidebar();
+            } catch (error) {
+                // 检测是否是本地文件打开的情况
+                const isLocalFile = window.location.protocol === 'file:';
+
+                if (isLocalFile) {
+                    // 本地文件模式：自动触发文件选择器
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p>正在打开文档...</p>
+                            <p style="margin-top: 10px; font-size: 14px; color: #666;">请选择文件：<strong>${doc.path}</strong></p>
+                        </div>
+                    `;
+
+                    // 创建一个隐藏的文件输入框
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = '.md,.markdown,.txt';
+                    fileInput.style.display = 'none';
+
+                    // 设置默认文件名提示
+                    const defaultFileName = doc.path.split('/').pop();
+
+                    // 监听文件选择
+                    fileInput.addEventListener('change', function (e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            loadLocalFile(file);
+                        } else {
+                            content.innerHTML = `
+                                <div class="empty-state">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                    </svg>
+                                    <p>未选择文件</p>
+                                    <p style="margin-top: 10px; font-size: 14px; color: #666;">请重新点击侧边栏文档，或者使用右上角"打开文件"按钮</p>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    // 触发文件选择
+                    document.body.appendChild(fileInput);
+                    fileInput.click();
+
+                    // 清理
+                    setTimeout(() => {
+                        document.body.removeChild(fileInput);
+                    }, 1000);
+                } else {
+                    // 服务器模式：显示错误信息
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            <p>文档加载失败：${error.message}</p>
+                            <p style="margin-top: 10px; font-size: 14px;">请点击右上角"打开文件"按钮手动选择本地文档</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // 解析题目
+        function parseQuestions(markdown) {
+            currentQuestions = [];
+            const lines = markdown.split('\n');
+
+            lines.forEach((line, index) => {
+                // 匹配 ## 或 ### 开头的题目，要求有数字序号
+                // 排除没有数字序号的分类标题（如 "## 前端基础"）
+                const match = line.match(/^#{2,3}\s+(\d+\.\s+.+)$/);
+
+                if (match) {
+                    currentQuestions.push({
+                        index: index,
+                        title: match[1]
+                    });
+                }
+            });
+        }
+
+        // 滚动到题目
+        function scrollToQuestion(questionIndex) {
+            const content = document.getElementById('content');
+            const question = currentQuestions[questionIndex];
+
+            if (!question) return;
+
+            // 查找对应的 h2 或 h3 元素
+            const headers = content.querySelectorAll('h2, h3');
+            const targetHeader = Array.from(headers).find(h => {
+                // 提取标题文本（去掉序号）
+                const text = h.textContent.replace(/^\d+\.\s*/, '').trim();
+                const questionText = question.title.replace(/^\d+\.\s*/, '').trim();
+                return text === questionText;
+            });
+
+            if (targetHeader) {
+                // 计算偏移量，避免被顶部导航栏遮挡
+                const headerHeight = 60; // 顶部导航栏高度
+                const elementPosition = targetHeader.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + content.scrollTop - headerHeight;
+
+                content.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'instant'
+                });
+
+                // 高亮当前题目
+                document.querySelectorAll('.question-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                const questionItems = document.querySelectorAll('.question-item');
+                if (questionItems[questionIndex]) {
+                    questionItems[questionIndex].classList.add('active');
+
+                    // 滚动侧边栏到高亮题目
+                    const sidebar = document.getElementById('sidebar');
+                    const activeQuestion = questionItems[questionIndex];
+                    const sidebarRect = sidebar.getBoundingClientRect();
+                    const questionRect = activeQuestion.getBoundingClientRect();
+
+                    // 计算题目在侧边栏中的相对位置
+                    const relativeTop = questionRect.top - sidebarRect.top + sidebar.scrollTop;
+                    const sidebarHeight = sidebar.clientHeight;
+
+                    // 如果题目不在可视区域内，滚动到中间位置
+                    if (relativeTop < sidebar.scrollTop || relativeTop > sidebar.scrollTop + sidebarHeight) {
+                        sidebar.scrollTo({
+                            top: relativeTop - sidebarHeight / 2,
+                            behavior: 'instant'
+                        });
+                    }
+                }
+
+                // 更新 URL 参数
+                const url = new URL(window.location);
+                url.searchParams.set('question', questionIndex);
+                window.history.pushState({}, '', url);
+            }
+        }
+
+        // 手动加载本地文件
+        function loadLocalFile(file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const content = document.getElementById('content');
+                content.innerHTML = `<div class="markdown-body">${marked.parse(e.target.result)}</div>`;
+
+                // 添加代码块复制按钮
+                addCopyButtons();
+
+                // 更新当前文档信息
+                currentDoc = {
+                    id: 'local',
+                    name: file.name,
+                    icon: '📄'
+                };
+
+                // 清除侧边栏选中状态
+                document.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+            };
+            reader.readAsText(file);
+        }
+
+        // 添加代码块复制按钮
+        function addCopyButtons() {
+            // 先对所有代码块进行高亮
+            document.querySelectorAll('pre code').forEach((block) => {
+                if (window.hljs) {
+                    // 获取语言标识
+                    const language = block.className.match(/language-(\w+)/);
+                    if (language) {
+                        const lang = language[1];
+                        // 检查语言是否被支持
+                        if (window.hljs.getLanguage(lang)) {
+                            window.hljs.highlightElement(block);
+                        } else {
+                            // 语言不被支持，尝试使用 XML 高亮（适用于 Vue）
+                            if (lang === 'vue' && window.hljs.getLanguage('xml')) {
+                                block.className = 'language-xml';
+                                window.hljs.highlightElement(block);
+                            } else {
+                                // 使用自动检测
+                                block.removeAttribute('class');
+                                window.hljs.highlightElement(block);
+                            }
+                        }
+                    } else {
+                        // 没有语言标识，使用自动检测
+                        window.hljs.highlightElement(block);
+                    }
+                }
+            });
+
+            const codeBlocks = document.querySelectorAll('pre code');
+
+            codeBlocks.forEach((codeBlock) => {
+                const pre = codeBlock.parentElement;
+
+                // 创建包装器
+                const wrapper = document.createElement('div');
+                wrapper.className = 'code-block-wrapper';
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
+
+                // 创建复制按钮
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-button';
+                copyButton.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>复制</span>
+                `;
+
+                // 复制功能
+                copyButton.addEventListener('click', async function () {
+                    try {
+                        const code = codeBlock.textContent;
+                        await navigator.clipboard.writeText(code);
+
+                        // 更新按钮状态
+                        copyButton.classList.add('copied');
+                        copyButton.innerHTML = `
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>已复制</span>
+                        `;
+
+                        // 显示复制成功提示
+                        showToast('代码已复制到剪贴板');
+
+                        // 2秒后恢复按钮状态
+                        setTimeout(() => {
+                            copyButton.classList.remove('copied');
+                            copyButton.innerHTML = `
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>复制</span>
+                            `;
+                        }, 2000);
+                    } catch (err) {
+                        console.error('复制失败:', err);
+                        showToast('复制失败，请手动复制');
+                    }
+                });
+
+                wrapper.appendChild(copyButton);
+            });
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            // 移除旧的提示
+            const oldToast = document.querySelector('.copy-toast');
+            if (oldToast) {
+                oldToast.remove();
+            }
+
+            // 创建新提示
+            const toast = document.createElement('div');
+            toast.className = 'copy-toast';
+            toast.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            // 2秒后自动移除
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+
+        // 搜索功能
+        let searchResults = [];
+        let selectedSearchIndex = -1;
+
+        // 预加载所有文档的题目列表
+        async function preloadAllQuestions() {
+            for (const section of documents) {
+                for (const doc of section.items) {
+                    try {
+                        const response = await fetch(doc.path);
+                        if (response.ok) {
+                            const markdown = await response.text();
+                            const questions = parseQuestionsFromMarkdown(markdown);
+                            allQuestions[doc.id] = {
+                                questions: questions,
+                                docName: doc.name
+                            };
+                        }
+                    } catch (error) {
+                        console.error(`Failed to load questions for ${doc.name}:`, error);
+                    }
+                }
+            }
+        }
+
+        // 从 Markdown 中解析题目
+        function parseQuestionsFromMarkdown(markdown) {
+            const questions = [];
+            const lines = markdown.split('\n');
+            let currentQuestion = null;
+            let contentLines = [];
+
+            lines.forEach((line, index) => {
+                // 匹配 ## 或 ### 开头的题目，要求有数字序号
+                // 排除没有数字序号的分类标题（如 "## 前端基础"）
+                const match = line.match(/^#{2,3}\s+(\d+\.\s+.+)$/);
+
+                if (match) {
+                    // 如果有上一个问题，保存它
+                    if (currentQuestion) {
+                        currentQuestion.content = contentLines.join('\n');
+                        questions.push(currentQuestion);
+                    }
+                    // 开始新问题
+                    currentQuestion = {
+                        index: index,
+                        title: match[1]
+                    };
+                    contentLines = [];
+                } else if (currentQuestion) {
+                    // 收集题目内容
+                    contentLines.push(line);
+                }
+            });
+
+            // 保存最后一个问题
+            if (currentQuestion) {
+                currentQuestion.content = contentLines.join('\n');
+                questions.push(currentQuestion);
+            }
+
+            return questions;
+        }
+
+        document.getElementById('searchInput').addEventListener('input', async function (e) {
+            const query = e.target.value.toLowerCase().trim();
+            selectedSearchIndex = -1;
+
+            if (!query) {
+                hideSearchResults();
+                return;
+            }
+
+            searchResults = [];
+
+            // 搜索所有文档的题目
+            documents.forEach(section => {
+                section.items.forEach(doc => {
+                    // 从已加载的题目列表中搜索
+                    if (allQuestions[doc.id] && allQuestions[doc.id].questions.length > 0) {
+                        allQuestions[doc.id].questions.forEach((question, index) => {
+                            // 搜索题目标题和内容
+                            const titleMatch = question.title.toLowerCase()
+                                .includes(query);
+                            const contentMatch = question.content && question
+                                .content.toLowerCase().includes(query);
+
+                            if (titleMatch || contentMatch) {
+                                searchResults.push({
+                                    docId: doc.id,
+                                    docName: doc.name,
+                                    questionIndex: index,
+                                    questionTitle: question.title,
+                                    matchType: titleMatch ? 'title' :
+                                        'content'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+            // 显示搜索结果
+            showSearchResults(searchResults, query);
+        });
+
+        // 显示搜索结果
+        function showSearchResults(results, query) {
+            // 移除旧的搜索结果容器
+            const oldResults = document.querySelector('.search-results');
+            if (oldResults) {
+                oldResults.remove();
+            }
+
+            if (results.length === 0) {
+                // 显示无结果提示
+                const searchResultsContainer = document.createElement('div');
+                searchResultsContainer.className = 'search-results';
+                searchResultsContainer.innerHTML = `
+                    <div class="no-results">
+                        未找到匹配的结果
+                    </div>
+                `;
+                document.querySelector('.search-box').appendChild(searchResultsContainer);
+                return;
+            }
+
+            // 高亮匹配文本
+            const highlightText = (text, query) => {
+                if (!query) return text;
+                const regex = new RegExp(`(${query})`, 'gi');
+                return text.replace(regex, '<span class="result-match">$1</span>');
+            };
+
+            // 创建搜索结果容器
+            const searchResultsContainer = document.createElement('div');
+            searchResultsContainer.className = 'search-results';
+            searchResultsContainer.innerHTML = `
+                <div class="search-results-header">
+                    <span>找到 ${results.length} 个匹配结果</span>
+                    <span style="font-size: 10px; color: #999;">↑↓ 选择，Enter 跳转</span>
+                </div>
+                <div class="search-results-list">
+                    ${results.map((result, index) => `
+                        <div class="search-result-item"
+                             data-index="${index}"
+                             onclick="jumpToSearchResult('${result.docId}', ${result.questionIndex})">
+                            <div class="result-doc">${result.docName}</div>
+                            <div class="result-question">
+                                ${highlightText(result.questionTitle, query)}
+                                ${result.matchType === 'content' ? '<span class="match-type-badge">内容匹配</span>' : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // 添加到搜索框容器中
+            document.querySelector('.search-box').appendChild(searchResultsContainer);
+        }
+
+        // 隐藏搜索结果
+        function hideSearchResults() {
+            const resultsContainer = document.querySelector('.search-results');
+            if (resultsContainer) {
+                resultsContainer.remove();
+            }
+            selectedSearchIndex = -1;
+        }
+
+        // 跳转到搜索结果
+        function jumpToSearchResult(docId, questionIndex) {
+            hideSearchResults();
+            document.getElementById('searchInput').value = '';
+
+            // 如果当前文档不是目标文档，先加载目标文档
+            if (!currentDoc || currentDoc.id !== docId) {
+                loadDocument(docId, questionIndex);
+            } else {
+                scrollToQuestion(questionIndex);
+            }
+        }
+
+        // 键盘事件处理
+        document.getElementById('searchInput').addEventListener('keydown', function (e) {
+            const resultsContainer = document.querySelector('.search-results');
+            if (!resultsContainer) return;
+
+            const resultItems = resultsContainer.querySelectorAll('.search-result-item');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedSearchIndex = Math.min(selectedSearchIndex + 1, resultItems.length - 1);
+                updateSelectedResult(resultItems);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedSearchIndex = Math.max(selectedSearchIndex - 1, 0);
+                updateSelectedResult(resultItems);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedSearchIndex >= 0 && selectedSearchIndex < searchResults.length) {
+                    const result = searchResults[selectedSearchIndex];
+                    jumpToSearchResult(result.docId, result.questionIndex);
+                }
+            } else if (e.key === 'Escape') {
+                hideSearchResults();
+                this.blur();
+            }
+        });
+
+        // 更新选中的搜索结果
+        function updateSelectedResult(resultItems) {
+            resultItems.forEach((item, index) => {
+                if (index === selectedSearchIndex) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({
+                        block: 'nearest'
+                    });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        // 点击页面其他地方关闭搜索结果
+        document.addEventListener('click', function (e) {
+            const searchBox = document.querySelector('.search-box');
+            const searchResults = document.querySelector('.search-results');
+            if (searchBox && !searchBox.contains(e.target) && searchResults) {
+                hideSearchResults();
+            }
+        });
+
+        // 文件选择处理
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                loadLocalFile(file);
+            }
+        });
+
+        // 移动端菜单切换
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        // 点击内容区域关闭移动端菜单
+        document.getElementById('content').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+        });
+
+        // 滚动时高亮对应的子项
+        document.getElementById('content').addEventListener('scroll', function () {
+            if (!currentDoc || currentQuestions.length === 0) return;
+
+            const content = this;
+            const scrollTop = content.scrollTop;
+            const headerHeight = 80; // 偏移量
+
+            // 查找 h2 或 h3 元素（对应 ## 或 ### 标题）
+            const headers = content.querySelectorAll('h2, h3');
+            let activeIndex = -1;
+
+            headers.forEach((header, index) => {
+                const rect = header.getBoundingClientRect();
+                const elementTop = rect.top + content.scrollTop;
+                const elementBottom = elementTop + rect.height;
+
+                // 如果元素在视口中间区域
+                if (elementTop - headerHeight < scrollTop && elementBottom > scrollTop) {
+                    // 提取标题文本（去掉序号）
+                    const text = header.textContent.replace(/^\d+\.\s*/, '').trim();
+
+                    // 找到对应的题目索引
+                    const questionIndex = currentQuestions.findIndex(q => {
+                        const questionText = q.title.replace(/^\d+\.\s*/, '').trim();
+                        return questionText === text;
+                    });
+
+                    if (questionIndex !== -1) {
+                        activeIndex = questionIndex;
+                    }
+                }
+            });
+
+            // 更新高亮状态
+            if (activeIndex !== -1) {
+                document.querySelectorAll('.question-item').forEach((item, index) => {
+                    if (index === activeIndex) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+        });
+
+        // 处理浏览器前进后退
+        window.addEventListener('popstate', function () {
+            const url = new URL(window.location);
+            const docId = url.searchParams.get('doc');
+            const questionId = url.searchParams.get('question');
+
+            if (docId) {
+                loadDocument(docId, questionId ? parseInt(questionId) : null);
+            }
+        });
+
+        // 初始化
+        window.addEventListener('load', async function () {
+            renderSidebar();
+
+            // 预加载所有文档的题目列表
+            await preloadAllQuestions();
+
+            // 检查 URL 参数
+            const url = new URL(window.location);
+            const docId = url.searchParams.get('doc');
+            const questionId = url.searchParams.get('question');
+
+            if (docId) {
+                loadDocument(docId, questionId ? parseInt(questionId) : null);
+            } else {
+                // 显示提示信息
+                const content = document.getElementById('content');
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                        <p>欢迎使用面试题集锦文档系统</p>
+                        <p style="margin-top: 10px; font-size: 14px;">请从左侧选择一个文档，或点击右上角"打开文件"按钮手动选择本地文档</p>
+                        <p style="margin-top: 20px; font-size: 12px; color: #999;">提示：点击分类标题可以折叠/展开</p>
+                    </div>
+                `;
+            }
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function (e) {
+            // Esc 关闭移动端菜单
+            if (e.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+
+            // Ctrl/Cmd + K 聚焦搜索框
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+    </script>
+</body>
+
+</html>
