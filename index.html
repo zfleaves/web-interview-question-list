@@ -1348,7 +1348,7 @@
         }
 
         // 加载文档
-        async function loadDocument(docId, questionId = null) {
+        async function loadDocument(docId, questionId = null, questionTitle = null) {
             // 查找文档
             let doc = null;
             documents.forEach(section => {
@@ -1366,7 +1366,7 @@
             // 更新 URL
             const url = new URL(window.location);
             url.searchParams.set('doc', docId);
-            if (questionId) {
+            if (questionId !== null) {
                 url.searchParams.set('question', questionId);
             } else {
                 url.searchParams.delete('question');
@@ -1401,7 +1401,10 @@
                 addCopyButtons();
 
                 // 滚动到指定题目或顶部
-                if (questionId !== null) {
+                if (questionTitle !== null) {
+                    // 使用问题标题来查找
+                    scrollToQuestionByTitle(questionTitle);
+                } else if (questionId !== null) {
                     scrollToQuestion(questionId);
 
                     // 确保侧边栏滚动到高亮题目
@@ -1508,10 +1511,23 @@
             currentQuestions = [];
             const lines = markdown.split('\n');
 
+            // 根据当前文档ID选择不同的解析规则
+            // 使用 ### 开头的三级标题作为问题的文档
+            const useH3ForQuestions = [
+                'javascript', 'react', 'vue2', 'vue3', 'es6',
+                'css', 'html', 'typescript',
+                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu'
+            ].includes(currentDoc?.id);
+
             lines.forEach((line, index) => {
-                // 匹配 ## 或 ### 开头的题目，要求有数字序号
-                // 排除没有数字序号的分类标题（如 "## 前端基础"）
-                const match = line.match(/^#{2,3}\s+(\d+\.\s+.+)$/);
+                let match;
+                if (useH3ForQuestions) {
+                    // 使用 ### 开头的三级标题作为问题（如 JavaScript、React 等）
+                    match = line.match(/^###\s+(\d+\.\s+.+)$/);
+                } else {
+                    // 使用 ## 开头的二级标题作为问题（如 HTTP 等）
+                    match = line.match(/^##\s+(\d+\.\s+.+)$/);
+                }
 
                 if (match) {
                     currentQuestions.push({
@@ -1529,8 +1545,17 @@
 
             if (!question) return;
 
-            // 查找对应的 h2 或 h3 元素
-            const headers = content.querySelectorAll('h2, h3');
+            // 根据当前文档ID选择查找 h2 或 h3 标题
+            // 使用 ### 开头的三级标题作为问题的文档
+            const useH3ForQuestions = [
+                'javascript', 'react', 'vue2', 'vue3', 'es6',
+                'css', 'html', 'typescript',
+                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu'
+            ].includes(currentDoc?.id);
+            const headerSelector = useH3ForQuestions ? 'h3' : 'h2';
+
+            // 查找对应的标题元素
+            const headers = content.querySelectorAll(headerSelector);
             const targetHeader = Array.from(headers).find(h => {
                 // 提取标题文本（去掉序号）
                 const text = h.textContent.replace(/^\d+\.\s*/, '').trim();
@@ -1580,6 +1605,52 @@
                 const url = new URL(window.location);
                 url.searchParams.set('question', questionIndex);
                 window.history.pushState({}, '', url);
+            }
+        }
+
+        // 根据标题滚动到题目
+        function scrollToQuestionByTitle(questionTitle) {
+            const content = document.getElementById('content');
+
+            // 根据当前文档ID选择查找 h2 或 h3 标题
+            // 使用 ### 开头的三级标题作为问题的文档
+            const useH3ForQuestions = [
+                'javascript', 'react', 'vue2', 'vue3', 'es6',
+                'css', 'html', 'typescript',
+                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu'
+            ].includes(currentDoc?.id);
+            const headerSelector = useH3ForQuestions ? 'h3' : 'h2';
+
+            // 查找对应的标题元素
+            const headers = content.querySelectorAll(headerSelector);
+            const targetHeader = Array.from(headers).find(h => {
+                // 提取标题文本（去掉序号）
+                const text = h.textContent.replace(/^\d+\.\s*/, '').trim();
+                const questionText = questionTitle.replace(/^\d+\.\s*/, '').trim();
+                return text === questionText;
+            });
+
+            if (targetHeader) {
+                // 计算偏移量，避免被顶部导航栏遮挡
+                const headerHeight = 60; // 顶部导航栏高度
+                const elementPosition = targetHeader.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + content.scrollTop - headerHeight;
+
+                content.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'instant'
+                });
+
+                // 高亮当前题目
+                document.querySelectorAll('.question-item').forEach(item => {
+                    item.classList.remove('active');
+                    // 检查是否是匹配的题目
+                    const itemText = item.textContent.replace(/^\d+\.\s*/, '').trim();
+                    const titleText = questionTitle.replace(/^\d+\.\s*/, '').trim();
+                    if (itemText === titleText) {
+                        item.classList.add('active');
+                    }
+                });
             }
         }
 
@@ -1737,11 +1808,12 @@
                         const response = await fetch(doc.path);
                         if (response.ok) {
                             const markdown = await response.text();
-                            const questions = parseQuestionsFromMarkdown(markdown);
+                            const questions = parseQuestionsFromMarkdown(markdown, doc.id);
                             allQuestions[doc.id] = {
                                 questions: questions,
                                 docName: doc.name
                             };
+                            console.log(`Loaded ${questions.length} questions for ${doc.name}`);
                         }
                     } catch (error) {
                         console.error(`Failed to load questions for ${doc.name}:`, error);
@@ -1751,16 +1823,29 @@
         }
 
         // 从 Markdown 中解析题目
-        function parseQuestionsFromMarkdown(markdown) {
+        function parseQuestionsFromMarkdown(markdown, docId) {
             const questions = [];
             const lines = markdown.split('\n');
             let currentQuestion = null;
             let contentLines = [];
 
+            // 根据文档ID选择不同的解析规则
+            // 使用 ### 开头的三级标题作为问题的文档
+            const useH3ForQuestions = [
+                'javascript', 'react', 'vue2', 'vue3', 'es6',
+                'css', 'html', 'typescript',
+                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu'
+            ].includes(docId);
+
             lines.forEach((line, index) => {
-                // 匹配 ## 或 ### 开头的题目，要求有数字序号
-                // 排除没有数字序号的分类标题（如 "## 前端基础"）
-                const match = line.match(/^#{2,3}\s+(\d+\.\s+.+)$/);
+                let match;
+                if (useH3ForQuestions) {
+                    // 使用 ### 开头的三级标题作为问题
+                    match = line.match(/^###\s+(\d+\.\s+.+)$/);
+                } else {
+                    // 使用 ## 开头的二级标题作为问题
+                    match = line.match(/^##\s+(\d+\.\s+.+)$/);
+                }
 
                 if (match) {
                     // 如果有上一个问题，保存它
@@ -1823,10 +1908,13 @@
                                 });
                             }
                         });
+                    } else {
+                        console.warn(`No questions loaded for ${doc.name}`);
                     }
                 });
             });
 
+            console.log(`Found ${searchResults.length} results for "${query}"`);
             // 显示搜索结果
             showSearchResults(searchResults, query);
         });
@@ -1900,11 +1988,19 @@
             hideSearchResults();
             document.getElementById('searchInput').value = '';
 
+            // 获取问题标题
+            const questionTitle = allQuestions[docId]?.questions[questionIndex]?.title;
+            if (!questionTitle) {
+                console.error('Question not found:', docId, questionIndex);
+                return;
+            }
+
             // 如果当前文档不是目标文档，先加载目标文档
             if (!currentDoc || currentDoc.id !== docId) {
-                loadDocument(docId, questionIndex);
+                loadDocument(docId, null, questionTitle);
             } else {
-                scrollToQuestion(questionIndex);
+                // 使用问题标题而不是索引来查找
+                scrollToQuestionByTitle(questionTitle);
             }
         }
 
