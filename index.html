@@ -59,6 +59,7 @@
             left: 0;
             right: 0;
             z-index: 1000;
+            transition: background 0.3s, border-color 0.3s;
         }
 
         .header h1 {
@@ -115,6 +116,21 @@
 
         .header .upload-btn:hover {
             background: #40a9ff;
+        }
+
+        .header .github-link {
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .header .github-link:hover {
+            color: var(--primary-color);
         }
 
         .header .file-input {
@@ -421,7 +437,7 @@
         /* 注释 */
         .hljs-comment,
         .hljs-quote {
-            color: #999999 !important;
+            color: #7f848e !important;
             font-style: italic;
         }
 
@@ -442,7 +458,7 @@
         .hljs-selector-class,
         .hljs-selector-tag,
         .hljs-selector-pseudo {
-            color: #ffffff !important;
+            color: #e06c75 !important;
         }
 
         /* 参数 */
@@ -480,7 +496,7 @@
         }
 
         .hljs-deletion {
-            color: #e06c75 !important;
+            color: #f44747 !important;
         }
 
         .hljs-addition {
@@ -495,12 +511,12 @@
         .hljs-code,
         .hljs-formula,
         .hljs-section {
-            color: #ffffff !important;
+            color: #e5c07b !important;
         }
 
         /* 为没有被高亮的代码块添加默认白色文本 */
         pre code {
-            color: #ffffff !important;
+            color: #abb2bf !important;
         }
 
         .markdown-body blockquote {
@@ -998,6 +1014,12 @@
             <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
                 📁 打开文件
             </button>
+            <a href="https://github.com/zfleaves/web-interview-question-list" target="_blank" class="github-link">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
             <input type="file" id="fileInput" class="file-input" accept=".md,.markdown,.txt">
         </div>
     </div>
@@ -1052,6 +1074,156 @@
                         icon: '💚',
                         path: 'vue3/Vue3高频面试题补充.md',
                         badge: '10题'
+                    },
+                    {
+                        id: 'vue2-source',
+                        name: 'Vue2 源码',
+                        icon: '💚',
+                        path: 'frontend-source-code/vue2/01__Vue2双向绑定原理.md',
+                        badge: '9题',
+                        subItems: [{
+                                id: 'vue2-bind',
+                                name: '双向绑定',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue2/01__Vue2双向绑定原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue2-diff',
+                                name: 'Diff 算法',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue2/02__Vue2_Diff算法原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue2-nexttick',
+                                name: 'nextTick',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue2/03__Vue2_nextTick原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue2-keepalive',
+                                name: 'keep-alive',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue2/04__Vue2_keep-alive原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue2-computed',
+                                name: 'computed & watch',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue2/05__Vue2_computed和watch原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue2-directive',
+                                name: '自定义指令',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue2/06__Vue2自定义指令原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue2-mount',
+                                name: '实例挂载流程',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue2/07__Vue2实例挂载流程.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue2-slot',
+                                name: 'Slot 原理',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue2/08__Vue2_Slot原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue2-full-flow',
+                                name: '响应式系统完整流程',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue2/09__Vue2响应式系统完整流程.md',
+                                badge: '源码'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'vue3-source',
+                        name: 'Vue3 源码',
+                        icon: '💚',
+                        path: 'frontend-source-code/vue3/01__Vue3_ref和reactive原理.md',
+                        badge: '5题',
+                        subItems: [{
+                                id: 'vue3-reactive',
+                                name: 'ref & reactive',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue3/01__Vue3_ref和reactive原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue3-computed',
+                                name: 'computed',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue3/02__Vue3_computed原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue3-watch',
+                                name: 'watch & watchEffect',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue3/03__Vue3_watch和watchEffect原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue3-diff',
+                                name: 'Diff 算法',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue3/04__Vue3_Diff算法原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'vue3-full-flow',
+                                name: '响应式系统完整流程',
+                                icon: '💚',
+                                path: 'frontend-source-code/vue3/05__Vue3响应式系统完整流程.md',
+                                badge: '源码'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'react-source',
+                        name: 'React 源码',
+                        icon: '⚛️',
+                        path: 'frontend-source-code/react/01__React虚拟DOM原理.md',
+                        badge: '4题',
+                        subItems: [{
+                                id: 'react-vdom',
+                                name: '虚拟 DOM',
+                                icon: '⚛️',
+                                path: 'frontend-source-code/react/01__React虚拟DOM原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'react-fiber',
+                                name: 'Fiber 架构',
+                                icon: '⚛️',
+                                path: 'frontend-source-code/react/02__React_Fiber架构原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'react-hooks',
+                                name: 'Hooks',
+                                icon: '⚛️',
+                                path: 'frontend-source-code/react/03__React_Hooks原理.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'react-full-flow',
+                                name: '响应式系统完整流程',
+                                icon: '⚛️',
+                                path: 'frontend-source-code/react/04__React响应式系统完整流程.md',
+                                badge: '源码'
+                            }
+                        ]
                     }
                 ]
             },
@@ -1259,6 +1431,7 @@
         let currentQuestions = [];
         let collapsedSections = {};
         let expandedQuestions = {};
+        let expandedSubItems = {}; // 存储子分类的展开状态
         let allQuestions = {}; // 存储所有文档的题目列表
 
         // 配置 marked
@@ -1291,14 +1464,34 @@
                     const questionListClass = (currentDoc && currentDoc.id === doc.id &&
                         isQuestionListExpanded) ? 'show' : '';
 
+                    // 判断是否有子分类
+                    const hasSubItems = doc.subItems && doc.subItems.length > 0;
+                    const subItemsExpanded = expandedSubItems[doc.id];
+                    const subItemsClass = subItemsExpanded ? 'show' : '';
+
                     html += `
                         <div>
                             <div class="sidebar-item ${activeClass}" onclick="handleDocClick(event, '${doc.id}')">
                                 <span class="icon">${doc.icon}</span>
                                 <span>${doc.name}</span>
                                 <span class="badge">${doc.badge}</span>
+                                ${hasSubItems ? `<span class="expand-arrow ${subItemsExpanded ? 'expanded' : ''}">▶</span>` : ''}
                                 ${currentDoc && currentDoc.id === doc.id ? `<span class="expand-arrow ${isQuestionListExpanded ? 'expanded' : ''}">▶</span>` : ''}
                             </div>
+                            ${hasSubItems ? `
+                                <div class="question-list ${subItemsClass}" id="subitems-${doc.id}">
+                                    ${doc.subItems.map(subItem => {
+                                        const subActiveClass = currentDoc && currentDoc.id === subItem.id ? 'active' : '';
+                                        return `
+                                            <div class="question-item ${subActiveClass}" onclick="loadDocument('${subItem.id}')">
+                                                <span style="margin-right: 4px;">${subItem.icon}</span>
+                                                ${subItem.name}
+                                                <span style="margin-left: auto; font-size: 10px; opacity: 0.7;">${subItem.badge}</span>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            ` : ''}
                             <div class="question-list ${questionListClass}" id="questions-${doc.id}">
                                 ${currentDoc && currentDoc.id === doc.id ? renderQuestionList() : ''}
                             </div>
@@ -1316,8 +1509,24 @@
         function handleDocClick(event, docId) {
             event.stopPropagation();
 
-            // 如果当前文档已加载，则切换题目列表的展开/折叠
-            if (currentDoc && currentDoc.id === docId) {
+            // 查找文档
+            let doc = null;
+            documents.forEach(section => {
+                const found = section.items.find(item => item.id === docId);
+                if (found) doc = found;
+            });
+
+            if (!doc) return;
+
+            // 判断是否有子分类
+            const hasSubItems = doc.subItems && doc.subItems.length > 0;
+
+            if (hasSubItems) {
+                // 如果有子分类，切换子分类的展开/折叠
+                expandedSubItems[docId] = !expandedSubItems[docId];
+                renderSidebar();
+            } else if (currentDoc && currentDoc.id === docId) {
+                // 如果当前文档已加载，则切换题目列表的展开/折叠
                 expandedQuestions[docId] = !expandedQuestions[docId];
                 renderSidebar();
             } else {
@@ -1349,11 +1558,22 @@
 
         // 加载文档
         async function loadDocument(docId, questionId = null, questionTitle = null) {
-            // 查找文档
+            // 查找文档（包括子分类中的文档）
             let doc = null;
             documents.forEach(section => {
+                // 先在主分类中查找
                 const found = section.items.find(item => item.id === docId);
-                if (found) doc = found;
+                if (found) {
+                    doc = found;
+                } else {
+                    // 在子分类中查找
+                    section.items.forEach(item => {
+                        if (item.subItems) {
+                            const subFound = item.subItems.find(subItem => subItem.id === docId);
+                            if (subFound) doc = subFound;
+                        }
+                    });
+                }
             });
 
             if (!doc) return;
@@ -1516,14 +1736,20 @@
             const useH3ForQuestions = [
                 'javascript', 'react', 'vue2', 'vue3', 'es6',
                 'css', 'html', 'typescript',
-                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu'
+                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu',
+                'source-code-vue2', 'source-code-vue3', 'source-code-react', 'source-code-index',
+                'vue2-bind', 'vue2-diff', 'vue2-nexttick', 'vue2-keepalive', 'vue2-computed', 'vue2-directive',
+                'vue2-mount', 'vue2-slot', 'vue2-full-flow',
+                'vue3-reactive', 'vue3-computed', 'vue3-watch', 'vue3-diff', 'vue3-full-flow',
+                'react-vdom', 'react-fiber', 'react-hooks', 'react-full-flow'
             ].includes(currentDoc?.id);
 
             lines.forEach((line, index) => {
                 let match;
                 if (useH3ForQuestions) {
                     // 使用 ### 开头的三级标题作为问题（如 JavaScript、React 等）
-                    match = line.match(/^###\s+(\d+\.\s+.+)$/);
+                    // 对于源码理解，匹配 ### 开头的任何标题（不限于数字序号）
+                    match = line.match(/^###\s+(.+)$/);
                 } else {
                     // 使用 ## 开头的二级标题作为问题（如 HTTP 等）
                     match = line.match(/^##\s+(\d+\.\s+.+)$/);
@@ -1550,7 +1776,12 @@
             const useH3ForQuestions = [
                 'javascript', 'react', 'vue2', 'vue3', 'es6',
                 'css', 'html', 'typescript',
-                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu'
+                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu',
+                'source-code-vue2', 'source-code-vue3', 'source-code-react', 'source-code-index',
+                'vue2-bind', 'vue2-diff', 'vue2-nexttick', 'vue2-keepalive', 'vue2-computed', 'vue2-directive',
+                'vue2-mount', 'vue2-slot', 'vue2-full-flow',
+                'vue3-reactive', 'vue3-computed', 'vue3-watch', 'vue3-diff', 'vue3-full-flow',
+                'react-vdom', 'react-fiber', 'react-hooks', 'react-full-flow'
             ].includes(currentDoc?.id);
             const headerSelector = useH3ForQuestions ? 'h3' : 'h2';
 
@@ -1617,7 +1848,12 @@
             const useH3ForQuestions = [
                 'javascript', 'react', 'vue2', 'vue3', 'es6',
                 'css', 'html', 'typescript',
-                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu'
+                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu',
+                'source-code-vue2', 'source-code-vue3', 'source-code-react', 'source-code-index',
+                'vue2-bind', 'vue2-diff', 'vue2-nexttick', 'vue2-keepalive', 'vue2-computed', 'vue2-directive',
+                'vue2-mount', 'vue2-slot', 'vue2-full-flow',
+                'vue3-reactive', 'vue3-computed', 'vue3-watch', 'vue3-diff', 'vue3-full-flow',
+                'react-vdom', 'react-fiber', 'react-hooks', 'react-full-flow'
             ].includes(currentDoc?.id);
             const headerSelector = useH3ForQuestions ? 'h3' : 'h2';
 
@@ -1804,6 +2040,7 @@
         async function preloadAllQuestions() {
             for (const section of documents) {
                 for (const doc of section.items) {
+                    // 加载主文档
                     try {
                         const response = await fetch(doc.path);
                         if (response.ok) {
@@ -1817,6 +2054,26 @@
                         }
                     } catch (error) {
                         console.error(`Failed to load questions for ${doc.name}:`, error);
+                    }
+
+                    // 加载子分类文档
+                    if (doc.subItems && doc.subItems.length > 0) {
+                        for (const subDoc of doc.subItems) {
+                            try {
+                                const subResponse = await fetch(subDoc.path);
+                                if (subResponse.ok) {
+                                    const subMarkdown = await subResponse.text();
+                                    const subQuestions = parseQuestionsFromMarkdown(subMarkdown, subDoc.id);
+                                    allQuestions[subDoc.id] = {
+                                        questions: subQuestions,
+                                        docName: subDoc.name
+                                    };
+                                    console.log(`Loaded ${subQuestions.length} questions for ${subDoc.name}`);
+                                }
+                            } catch (error) {
+                                console.error(`Failed to load questions for ${subDoc.name}:`, error);
+                            }
+                        }
                     }
                 }
             }
@@ -1834,14 +2091,20 @@
             const useH3ForQuestions = [
                 'javascript', 'react', 'vue2', 'vue3', 'es6',
                 'css', 'html', 'typescript',
-                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu'
+                'alibaba', 'tencent', 'pinduoduo', 'baidu', 'jd', 'bytedance', 'zhihu', 'futu',
+                'source-code-vue2', 'source-code-vue3', 'source-code-react', 'source-code-index',
+                'vue2-bind', 'vue2-diff', 'vue2-nexttick', 'vue2-keepalive', 'vue2-computed', 'vue2-directive',
+                'vue2-mount', 'vue2-slot', 'vue2-full-flow',
+                'vue3-reactive', 'vue3-computed', 'vue3-watch', 'vue3-diff', 'vue3-full-flow',
+                'react-vdom', 'react-fiber', 'react-hooks', 'react-full-flow'
             ].includes(docId);
 
             lines.forEach((line, index) => {
                 let match;
                 if (useH3ForQuestions) {
                     // 使用 ### 开头的三级标题作为问题
-                    match = line.match(/^###\s+(\d+\.\s+.+)$/);
+                    // 对于源码理解，匹配 ### 开头的任何标题（不限于数字序号）
+                    match = line.match(/^###\s+(.+)$/);
                 } else {
                     // 使用 ## 开头的二级标题作为问题
                     match = line.match(/^##\s+(\d+\.\s+.+)$/);
@@ -1888,7 +2151,7 @@
             // 搜索所有文档的题目
             documents.forEach(section => {
                 section.items.forEach(doc => {
-                    // 从已加载的题目列表中搜索
+                    // 搜索主文档
                     if (allQuestions[doc.id] && allQuestions[doc.id].questions.length > 0) {
                         allQuestions[doc.id].questions.forEach((question, index) => {
                             // 搜索题目标题和内容
@@ -1908,8 +2171,32 @@
                                 });
                             }
                         });
-                    } else {
-                        console.warn(`No questions loaded for ${doc.name}`);
+                    }
+
+                    // 搜索子分类文档
+                    if (doc.subItems && doc.subItems.length > 0) {
+                        doc.subItems.forEach(subDoc => {
+                            if (allQuestions[subDoc.id] && allQuestions[subDoc.id].questions.length > 0) {
+                                allQuestions[subDoc.id].questions.forEach((question, index) => {
+                                    // 搜索题目标题和内容
+                                    const titleMatch = question.title.toLowerCase()
+                                        .includes(query);
+                                    const contentMatch = question.content && question
+                                        .content.toLowerCase().includes(query);
+
+                                    if (titleMatch || contentMatch) {
+                                        searchResults.push({
+                                            docId: subDoc.id,
+                                            docName: subDoc.name,
+                                            questionIndex: index,
+                                            questionTitle: question.title,
+                                            matchType: titleMatch ? 'title' :
+                                                'content'
+                                        });
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
             });
