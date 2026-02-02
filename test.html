@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>测试</title>
+</head>
+<body>
+    <div id="result"></div>
+    <script>
+        try {
+            // 提取 index.html 中的 script 内容
+            fetch('index.html')
+                .then(res => res.text())
+                .then(html => {
+                    // 提取 script 标签
+                    const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
+                    if (scriptMatch && scriptMatch[1]) {
+                        const script = scriptMatch[1];
+                        // 尝试创建函数来检查语法
+                        try {
+                            new Function(script);
+                            document.getElementById('result').innerHTML = '<p style="color:green">✓ 语法检查通过</p>';
+                        } catch (e) {
+                            document.getElementById('result').innerHTML = '<p style="color:red">✗ 语法错误: ' + e.message + '</p>';
+                            
+                            // 显示错误位置
+                            const errorMatch = e.stack.match(/<anonymous>:(\d+)/);
+                            if (errorMatch) {
+                                const lineNum = parseInt(errorMatch[1]);
+                                const lines = script.split('\n');
+                                const start = Math.max(0, lineNum - 5);
+                                const end = Math.min(lines.length, lineNum + 5);
+                                const errorLines = lines.slice(start, end).map((l, i) => `${start + i + 1}: ${l}`).join('\n');
+                                document.getElementById('result').innerHTML += '<pre style="background:#f0f0f0;padding:10px;">' + errorLines + '</pre>';
+                            }
+                        }
+                    }
+                });
+        } catch (e) {
+            document.getElementById('result').innerHTML = '<p style="color:red">错误: ' + e.message + '</p>';
+        }
+    </script>
+</body>
+</html>

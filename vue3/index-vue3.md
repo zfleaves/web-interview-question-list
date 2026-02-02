@@ -13,6 +13,8 @@
 9. [9. Vue2 和 Vue3 的详细对比](./questions-vue3/09-9__Vue2_和_Vue3_的详细对比.md)
 10. [10. Vue3 性能优化有哪些新方法？](./questions-vue3/10-10__Vue3_性能优化有哪些新方法_.md)
 11. [11. Vue3 最佳实践](./questions-vue3/11-11__Vue3_最佳实践.md)
+12. [12. 请深入讲解 Vue3 响应式系统的核心实现原理](./questions-vue3/12-12__请深入讲解_Vue3_响应式系统的核心实现原理.md)
+13. [13. Vue3 响应式 API（ref、reactive、toRaw、watch、effect）详解](./questions-vue3/13-13__Vue3_响应式_API_ref_reactive_toRaw_watch_effect_详解.md)
 
 ---
 
@@ -62,3 +64,11 @@
 ### 11. 11. Vue3 最佳实践
 
 [查看详细答案](./questions-vue3/11-11__Vue3_最佳实践.md)
+
+### 12. 12. 请深入讲解 Vue3 响应式系统的核心实现原理
+
+[查看详细答案](./questions-vue3/12-12__请深入讲解_Vue3_响应式系统的核心实现原理.md)
+
+### 13. 13. Vue3 响应式 API（ref、reactive、toRaw、watch、effect）详解
+
+[查看详细答案](./questions-vue3/13-13__Vue3_响应式_API_ref_reactive_toRaw_watch_effect_详解.md)

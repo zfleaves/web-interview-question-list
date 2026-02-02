@@ -30,10 +30,11 @@ if (!fs.existsSync(questionsDir)) {
 
 // 生成问题文件
 questions.forEach((question, index) => {
+  const questionNumber = index + 1;
   const title = question.split('\n')[0].trim();
   // 移除特殊字符，只保留中英文、数字、下划线、连字符
-  const safeTitle = title.replace(/[^\w\u4e00-\u9fa5\-]/g, '_');
-  const fileName = `${String(index + 1).padStart(2, '0')}__${safeTitle}.md`;
+  const safeTitle = title.replace(/[\/\\:*?"<>|？。,、（）\(\)]/g, '_').replace(/\s+/g, '_').replace(/[\.]/g, '_');
+  const fileName = `${String(questionNumber).padStart(2, '0')}__${questionNumber}__${safeTitle}.md`;
   const filePath = path.join(questionsDir, fileName);
 
   const questionContent = `## ${question.trim()}`;
@@ -41,5 +42,37 @@ questions.forEach((question, index) => {
 
   console.log(`Created: ${fileName}`);
 });
+
+// 生成索引文件
+const indexContent = `# HTTP 面试题集锦（截止 2025 年底）
+
+## 目录
+
+${questions.map((question, index) => {
+  const questionNumber = index + 1;
+  const title = question.split('\n')[0].trim();
+  const safeTitle = title.replace(/[\/\\:*?"<>|？。,、（）\(\)]/g, '_').replace(/\s+/g, '_').replace(/[\.]/g, '_');
+  const fileName = `${String(questionNumber).padStart(2, '0')}__${questionNumber}__${safeTitle}.md`;
+  return `${questionNumber}. [${title}](./questions-http/${fileName})`;
+}).join('\n')}
+
+---
+
+## 问题列表
+
+${questions.map((question, index) => {
+  const questionNumber = index + 1;
+  const title = question.split('\n')[0].trim();
+  const safeTitle = title.replace(/[\/\\:*?"<>|？。,、（）\(\)]/g, '_').replace(/\s+/g, '_').replace(/[\.]/g, '_');
+  const fileName = `${String(questionNumber).padStart(2, '0')}__${questionNumber}__${safeTitle}.md`;
+  return `
+### ${questionNumber}. ${title}
+
+[查看详细答案](./questions-http/${fileName})`;
+}).join('\n')}
+`;
+
+fs.writeFileSync(path.join(__dirname, 'index.md'), indexContent, 'utf-8');
+console.log('Created: index.md');
 
 console.log(`Total questions: ${questions.length}`);
