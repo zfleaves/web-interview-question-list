@@ -1,0 +1,31 @@
+# 2. Vite 依赖预构建是如何工作的？
+
+**答案：**
+
+Vite 在开发服务器启动时，会自动预构建项目中的依赖，将 CommonJS/UMD 转换为 ESM。
+
+**工作原理：**
+1. 扫描项目中的 import 语句，识别第三方依赖
+2. 使用 esbuild 将依赖转换为 ESM
+3. 将多个依赖打包到一个 chunk 中
+4. 生成缓存的依赖文件到 `node_modules/.vite`
+5. 浏览器请求依赖时，返回预构建的文件
+
+```javascript
+// vite.config.js
+export default {
+  optimizeDeps: {
+    include: ['vue', 'vue-router'],  // 强制预构建
+    exclude: ['your-dep'],            // 不预构建
+    esbuildOptions: {
+      target: 'es2020'
+    }
+  }
+};
+
+// 清除缓存
+rm -rf node_modules/.vite
+vite dev --force
+```
+
+---
